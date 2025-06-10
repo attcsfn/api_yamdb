@@ -43,7 +43,7 @@ class Title(models.Model):
         validators=[
             MinValueValidator(1000, message="Год должен быть не меньше 1000."),
             MaxValueValidator(
-                datetime.now(), message='Год не может быть больше текущего')
+                datetime.now().year, message='Год не может быть больше текущего')
         ]
     )
     description = models.TextField('Описание', blank=True)
