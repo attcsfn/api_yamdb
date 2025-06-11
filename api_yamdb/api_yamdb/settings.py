@@ -1,14 +1,16 @@
 from pathlib import Path
 
-from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = config('SECRET_KEY')
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = 'p&l%385148kslhtyn^##a1)ilz@4zqj=rq&agdol^##zgl9(vs'
 
-DEBUG = False
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
+
 
 # Application definition
 
@@ -19,13 +21,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',
-    'rest_framework_simplejwt',
-    'users.apps.UsersConfig',
-    'reviews.apps.ReviewsConfig',
-    'api.apps.ApiConfig',
-    'titles.apps.TitlesConfig',
-    'django_filters',
 ]
 
 MIDDLEWARE = [
@@ -59,6 +54,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'api_yamdb.wsgi.application'
 
+
 # Database
 
 DATABASES = {
@@ -68,26 +64,6 @@ DATABASES = {
     }
 }
 
-# Auth model
-
-AUTH_USER_MODEL = 'users.User'
-
-# DRF settings
-
-REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
-    ],
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 5,
-    'DEFAULT_FILTER_BACKENDS': [
-        'django_filters.rest_framework.DjangoFilterBackend',
-        'rest_framework.filters.OrderingFilter',
-    ]
-}
 
 # Password validation
 
@@ -106,9 +82,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+
 # Internationalization
 
-LANGUAGE_CODE = 'ru-ru'
+LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
 
@@ -118,22 +95,9 @@ USE_L10N = True
 
 USE_TZ = True
 
+
 # Static files (CSS, JavaScript, Images)
 
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = ((BASE_DIR / 'static/'),)
-
-# Email messages
-
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-
-EMAIL_HOST = config('EMAIL_HOST')
-
-EMAIL_PORT = config('EMAIL_PORT', cast=int)
-
-EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool)
-
-EMAIL_HOST_USER = config('EMAIL_HOST_USER')
-
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
