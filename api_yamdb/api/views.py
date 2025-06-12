@@ -9,12 +9,15 @@ from rest_framework.permissions import (AllowAny, IsAuthenticated,
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 
+from reviews.models import Review
 from titles.models import Category, Genre, Title
 from users.models import User
-from users.permissions import (IsAdmin, IsAdminOrReadOnly)
+from users.permissions import (IsAdmin, IsAdminOrReadOnly,
+                               IsAuthorModeratorAdminOrReadOnly)
 
 from .filters import TitleFilter
-from .serializers import (CategorySerializer, GenreSerializer,
+from .serializers import (CategorySerializer, CommentSerializer,
+                          GenreSerializer, ReviewSerializer,
                           SignUpSerializer, TitleGETSerializer,
                           TitleSerializer, TokenSerializer, UserSerializer)
 
@@ -107,3 +110,40 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=HTTPStatus.OK)
         serializer = self.get_serializer(user)
         return Response(serializer.data, status=HTTPStatus.OK)
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    serializer_class = CommentSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly,
+                          IsAuthorModeratorAdminOrReadOnly)
+
+    def get_review(self):
+        title_id = self.kwargs.get('title_id')
+        review_id = self.kwargs.get('review_id')
+        review = get_object_or_404(Review, id=review_id, title_id=title_id)
+        return review
+
+    def get_queryset(self):
+        return self.get_review().comments.all()
+
+    def perform_create(self, serializer):
+        review = self.get_review()
+        serializer.save(author=self.request.user, review=review)
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    serializer_class = ReviewSerializer
+    permission_classes = (
+        IsAuthenticatedOrReadOnly,
+        IsAuthorModeratorAdminOrReadOnly,
+    )
+
+    def get_title(self):
+        return get_object_or_404(Title, id=self.kwargs.get('title_id'))
+
+    def get_queryset(self):
+        return self.get_title().reviews.all()
+
+    def perform_create(self, serializer):
+        title = self.get_title()
+        serializer.save(author=self.request.user, title=title)
