@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.core.validators import RegexValidator
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
@@ -136,12 +137,17 @@ class TitleGETSerializer(serializers.ModelSerializer):
             'year',
             'description',
             'genre',
-            'category'
+            'category',
+            'rating'
         )
         read_only_fields = (
             'genre',
             'category'
         )
+
+    def get_rating(self, obj):
+        avg = obj.reviews.aggregate(Avg('score'))['score__avg']
+        return round(avg) if avg is not None else None
 
 
 class TitleSerializer(serializers.ModelSerializer):
