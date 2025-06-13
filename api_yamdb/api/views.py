@@ -17,9 +17,9 @@ from users.permissions import (IsAdmin, IsAdminOrReadOnly,
 
 from .filters import TitleFilter
 from .serializers import (CategorySerializer, CommentSerializer,
-                          GenreSerializer, ReviewSerializer,
-                          SignUpSerializer, TitleGETSerializer,
-                          TitleSerializer, TokenSerializer, UserSerializer)
+                          GenreSerializer, ReviewSerializer, SignUpSerializer,
+                          TitleGETSerializer, TitleSerializer, TokenSerializer,
+                          UserSerializer)
 
 
 class CreateListDestroyViewSet(mixins.CreateModelMixin,
