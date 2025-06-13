@@ -116,6 +116,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,
                           IsAuthorModeratorAdminOrReadOnly)
+    http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
 
     def get_review(self):
         title_id = self.kwargs.get('title_id')
@@ -137,6 +138,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
         IsAuthenticatedOrReadOnly,
         IsAuthorModeratorAdminOrReadOnly,
     )
+    http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
 
     def get_title(self):
         return get_object_or_404(Title, id=self.kwargs.get('title_id'))
