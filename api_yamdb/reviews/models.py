@@ -63,7 +63,3 @@ class Comment(BaseModel):
     class Meta():
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
-
-
-
-
