@@ -131,7 +131,7 @@ class Command(BaseCommand):
 
             if field_name in model_data and field.many_to_one:
                 model_data[field_name] = self._get_related_object(
-                    field.related_model, 
+                    field.related_model,
                     model_data[field_name]
                 )
         return model_data
