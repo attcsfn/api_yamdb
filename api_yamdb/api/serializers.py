@@ -103,18 +103,24 @@ class MeSerializer(UserSerializer):
 
 
 class CategorySerializer(serializers.ModelSerializer):
+    """Сериализатор объектов модели Category."""
+
     class Meta:
         model = Category
         exclude = ('id',)
 
 
 class GenreSerializer(serializers.ModelSerializer):
+    """Сериализатор объектов модели Genre."""
+
     class Meta:
         model = Genre
         exclude = ('id',)
 
 
 class TitleGETSerializer(serializers.ModelSerializer):
+    """Сериализатор объектов модели Title для GET запросов."""
+
     genre = GenreSerializer(many=True)
     category = CategorySerializer()
     rating = serializers.SerializerMethodField()
@@ -141,6 +147,8 @@ class TitleGETSerializer(serializers.ModelSerializer):
 
 
 class TitleSerializer(serializers.ModelSerializer):
+    """Сериализатор объектов модели Title."""
+
     genre = serializers.SlugRelatedField(
         slug_field='slug',
         queryset=Genre.objects.all(),
@@ -192,6 +200,8 @@ class ReviewSerializer(serializers.ModelSerializer):
         read_only_fields = ('title',)
 
     def validate(self, data):
+        """Проверка: один отзыв на одно произведение от одного пользователя."""
+
         request = self.context.get('request')
         title_id = self.context['request'].parser_context['kwargs']['title_id']
         user = request.user
