@@ -19,7 +19,7 @@ from .filters import TitleFilter
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, ReviewSerializer, SignUpSerializer,
                           TitleGETSerializer, TitleSerializer, TokenSerializer,
-                          UserSerializer)
+                          UserSerializer, UserMeSerializer)
 
 
 class CreateListDestroyViewSet(mixins.CreateModelMixin,
@@ -104,15 +104,18 @@ class UserViewSet(viewsets.ModelViewSet):
     def me(self, request):
         user = request.user
         if request.method == 'PATCH':
-            serializer = self.get_serializer(
+            # Использование специального сериализатора без поля role
+            serializer = UserMeSerializer(
                 user,
                 data=request.data,
                 partial=True
             )
             serializer.is_valid(raise_exception=True)
-            serializer.save(role=user.role)
+            # Убрано принудительное сохранение роли
+            serializer.save()
             return Response(serializer.data, status=HTTPStatus.OK)
-        serializer = self.get_serializer(user)
+        # Для GET также используем сериализатор без role
+        serializer = UserMeSerializer(user)
         return Response(serializer.data, status=HTTPStatus.OK)
 
 
