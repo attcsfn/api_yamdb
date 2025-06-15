@@ -1,4 +1,4 @@
-from api.validators import validate_year
+
 from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
@@ -6,13 +6,20 @@ from django.core.validators import RegexValidator
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
-from api.validators import validate_score_range
+from api_yamdb import constants
+from api.validators import validate_score_range, validate_year
 from reviews.models import Comment, Review
 from titles.models import Category, Genre, Title
 from users.models import User
 
-from api_yamdb import constants
 
+class ReadOnlyModelSerializer(serializers.ModelSerializer):
+    def get_fields(self):
+        fields = super().get_fields()
+        for field in fields.values():
+            field.read_only = True
+        return fields
+    
 
 class SignUpSerializer(serializers.Serializer):
     email = serializers.EmailField(
@@ -124,7 +131,7 @@ class GenreSerializer(serializers.ModelSerializer):
         exclude = ('id',)
 
 
-class TitleGETSerializer(serializers.ModelSerializer):
+class TitleGETSerializer(ReadOnlyModelSerializer):
     """Сериализатор объектов модели Title для GET запросов."""
 
     genre = GenreSerializer(many=True)
@@ -140,11 +147,7 @@ class TitleGETSerializer(serializers.ModelSerializer):
             'description',
             'genre',
             'category',
-            'rating'
-        )
-        read_only_fields = (
-            'genre',
-            'category'
+            'rating',
         )
 
 
@@ -156,11 +159,11 @@ class TitleSerializer(serializers.ModelSerializer):
         queryset=Genre.objects.all(),
         many=True,
         required=True,
-        allow_empty=False
+        allow_empty=False,
     )
     category = serializers.SlugRelatedField(
         slug_field='slug',
-        queryset=Category.objects.all()
+        queryset=Category.objects.all(),
     )
     year = serializers.IntegerField(validators=[validate_year])
 
@@ -171,7 +174,7 @@ class TitleSerializer(serializers.ModelSerializer):
             'year',
             'description',
             'genre',
-            'category'
+            'category',
         )
 
     def to_representation(self, title):
@@ -181,7 +184,7 @@ class TitleSerializer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         read_only=True,
-        slug_field='username'
+        slug_field='username',
     )
 
     class Meta:

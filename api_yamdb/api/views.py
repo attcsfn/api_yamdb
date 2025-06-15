@@ -15,7 +15,6 @@ from titles.models import Category, Genre, Title
 from users.models import User
 from users.permissions import (IsAdmin, IsAdminOrReadOnly,
                                IsAuthorModeratorAdminOrReadOnly)
-
 from .filters import TitleFilter
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, ReviewSerializer, SignUpSerializer,
