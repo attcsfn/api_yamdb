@@ -17,9 +17,9 @@ from users.permissions import (IsAdmin, IsAdminOrReadOnly,
 
 from .filters import TitleFilter
 from .serializers import (CategorySerializer, CommentSerializer,
-                          GenreSerializer, ReviewSerializer, SignUpSerializer,
-                          TitleGETSerializer, TitleSerializer, TokenSerializer,
-                          UserSerializer)
+                          GenreSerializer, MeSerializer, ReviewSerializer,  # Добавлен MeSerializer
+                          SignUpSerializer, TitleGETSerializer, TitleSerializer,
+                          TokenSerializer, UserSerializer)
 
 
 class CreateListDestroyViewSet(mixins.CreateModelMixin,
@@ -95,10 +95,13 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(
         detail=False,
         methods=['get', 'patch'],
-        permission_classes=[IsAuthenticated]
+        permission_classes=[IsAuthenticated],
+        serializer_class=MeSerializer  # Используем специальный сериализатор
     )
     def me(self, request):
         user = request.user
+        serializer = self.get_serializer(user)
+        
         if request.method == 'PATCH':
             serializer = self.get_serializer(
                 user,
@@ -106,9 +109,9 @@ class UserViewSet(viewsets.ModelViewSet):
                 partial=True
             )
             serializer.is_valid(raise_exception=True)
-            serializer.save(role=user.role)
+            serializer.save()
             return Response(serializer.data, status=HTTPStatus.OK)
-        serializer = self.get_serializer(user)
+            
         return Response(serializer.data, status=HTTPStatus.OK)
 
 
