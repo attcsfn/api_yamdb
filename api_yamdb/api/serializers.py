@@ -22,10 +22,10 @@ class SignUpSerializer(serializers.Serializer):
     username = serializers.CharField(
         required=True,
         max_length=constants.LIMIT_USERNAME,
-        validators=[RegexValidator(
+        validators=(RegexValidator(
             regex=constants.USERNAME_REGEX,
             message='Недопустимые символы в username!'
-        )]
+        ))
     )
 
     def validate_username(self, value):
@@ -72,8 +72,8 @@ class TokenSerializer(serializers.Serializer):
     confirmation_code = serializers.CharField(required=True)
 
     def validate(self, data):
-        username = data['username']
-        confirmation_code = data['confirmation_code']
+        username = data('username')
+        confirmation_code = data('confirmation_code')
         user = get_object_or_404(User, username=username)
 
         if not default_token_generator.check_token(user, confirmation_code):
