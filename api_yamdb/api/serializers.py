@@ -7,6 +7,7 @@ from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
+from api.validators import validate_score_range
 from reviews.models import Comment, Review
 from titles.models import Category, Genre, Title
 from users.models import User
@@ -195,6 +196,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         slug_field='username',
         read_only=True,
     )
+    score = serializers.IntegerField(validators=[validate_score_range])
 
     class Meta:
         model = Review
