@@ -19,7 +19,7 @@ class ReadOnlyModelSerializer(serializers.ModelSerializer):
         for field in fields.values():
             field.read_only = True
         return fields
-    
+
 
 class SignUpSerializer(serializers.Serializer):
     email = serializers.EmailField(
