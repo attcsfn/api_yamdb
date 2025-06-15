@@ -203,8 +203,8 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         """Проверка: один отзыв на одно произведение от одного пользователя."""
-        request = self.context.get('request')
-        title_id = self.context['request'].parser_context['kwargs']['title_id']
+        request = self.context['request']
+        title_id = self.context['view'].kwargs.get('title_id')
         user = request.user
 
         if request.method == 'POST':
