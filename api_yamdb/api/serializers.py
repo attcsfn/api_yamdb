@@ -1,4 +1,3 @@
-
 from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
@@ -79,8 +78,9 @@ class TokenSerializer(serializers.Serializer):
     confirmation_code = serializers.CharField(required=True)
 
     def validate(self, data):
-        username = data.get('username')
-        confirmation_code = data.get('confirmation_code')
+        # Исправлено: прямой доступ к обязательным полям вместо get()
+        username = data['username']
+        confirmation_code = data['confirmation_code']
         user = get_object_or_404(User, username=username)
 
         if not default_token_generator.check_token(user, confirmation_code):
@@ -93,12 +93,7 @@ class TokenSerializer(serializers.Serializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    role = serializers.ChoiceField(
-        choices=User.ROLE_CHOICES,
-        required=False,
-        default=User.USER
-    )
-
+    # Убрано явное объявление поля role - используется значение из модели
     class Meta:
         model = User
         fields = (
@@ -109,10 +104,20 @@ class UserSerializer(serializers.ModelSerializer):
             'email': {'required': True},
         }
 
-    def validate_role(self, value):
-        if value not in dict(User.ROLE_CHOICES):
-            raise serializers.ValidationError("Недопустимая роль")
-        return value
+
+class UserMeSerializer(serializers.ModelSerializer):
+    # Заменяем source на прямое использование поля
+    role = serializers.CharField(read_only=True)
+    
+    class Meta:
+        model = User
+        fields = (
+            'username', 'email', 'first_name',
+            'last_name', 'bio', 'role'
+        )
+        extra_kwargs = {
+            'email': {'required': True},
+        }
 
 
 class CategorySerializer(serializers.ModelSerializer):
