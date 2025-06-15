@@ -13,12 +13,10 @@ def validate_year(value):
 
 
 def validate_score_range(value):
-
     is_valid = MIN_SCORE <= value <= MAX_SCORE
     if not is_valid:
         raise ValidationError(
-            'Оценка должна быть в диапазоне от' 
+            'Оценка должна быть в диапазоне от'
             f'{MIN_SCORE} до {MAX_SCORE}'
-
         )
     return value
