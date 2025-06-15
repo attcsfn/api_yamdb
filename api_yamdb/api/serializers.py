@@ -3,10 +3,10 @@ from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.core.validators import RegexValidator
-from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
+from api.validators import validate_score_range
 from reviews.models import Comment, Review
 from titles.models import Category, Genre, Title
 from users.models import User
@@ -129,7 +129,7 @@ class TitleGETSerializer(serializers.ModelSerializer):
 
     genre = GenreSerializer(many=True)
     category = CategorySerializer()
-    rating = serializers.SerializerMethodField()
+    rating = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Title
@@ -146,10 +146,6 @@ class TitleGETSerializer(serializers.ModelSerializer):
             'genre',
             'category'
         )
-
-    def get_rating(self, obj):
-        avg = obj.reviews.aggregate(Avg('score'))['score__avg']
-        return round(avg) if avg is not None else None
 
 
 class TitleSerializer(serializers.ModelSerializer):
@@ -199,6 +195,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         slug_field='username',
         read_only=True,
     )
+    score = serializers.IntegerField(validators=[validate_score_range])
 
     class Meta:
         model = Review
@@ -207,13 +204,15 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         """Проверка: один отзыв на одно произведение от одного пользователя."""
-        request = self.context.get('request')
-        title_id = self.context['request'].parser_context['kwargs']['title_id']
+        request = self.context['request']
+        title_id = self.context['view'].kwargs.get('title_id')
         user = request.user
 
-        if request.method == 'POST':
-            if Review.objects.filter(title_id=title_id, author=user).exists():
-                raise serializers.ValidationError(
-                    'Вы уже оставили отзыв на это произведение.'
-                )
+        if request.method != 'POST':
+            return data
+
+        if Review.objects.filter(title_id=title_id, author=user).exists():
+            raise serializers.ValidationError(
+                'Вы уже оставили отзыв на это произведение.'
+            )
         return data

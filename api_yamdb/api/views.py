@@ -1,6 +1,7 @@
 from http import HTTPStatus
 
 from django.shortcuts import get_object_or_404
+from django.db.models import Avg
 from rest_framework import mixins, pagination, views, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
@@ -51,6 +52,10 @@ class TitleViewSet(viewsets.ModelViewSet):
     filterset_fields = ('name',)
     ordering = ('name',)
     http_method_names = ('get', 'post', 'patch', 'delete')
+
+    def get_queryset(self):
+        return Title.objects.annotate(rating=Avg('reviews__score')).order_by(
+            'name')
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
