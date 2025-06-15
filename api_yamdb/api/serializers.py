@@ -139,11 +139,11 @@ class TitleGETSerializer(serializers.ModelSerializer):
             'description',
             'genre',
             'category',
-            'rating'
+            'rating',
         )
         read_only_fields = (
             'genre',
-            'category'
+            'category',
         )
 
 
@@ -155,11 +155,11 @@ class TitleSerializer(serializers.ModelSerializer):
         queryset=Genre.objects.all(),
         many=True,
         required=True,
-        allow_empty=False
+        allow_empty=False,
     )
     category = serializers.SlugRelatedField(
         slug_field='slug',
-        queryset=Category.objects.all()
+        queryset=Category.objects.all(),
     )
     year = serializers.IntegerField(validators=[validate_year])
 
@@ -170,7 +170,7 @@ class TitleSerializer(serializers.ModelSerializer):
             'year',
             'description',
             'genre',
-            'category'
+            'category',
         )
 
     def to_representation(self, title):
@@ -180,7 +180,7 @@ class TitleSerializer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         read_only=True,
-        slug_field='username'
+        slug_field='username',
     )
 
     class Meta:
