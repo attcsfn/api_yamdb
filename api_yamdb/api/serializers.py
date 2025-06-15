@@ -18,7 +18,7 @@ class ReadOnlyModelSerializer(serializers.ModelSerializer):
         for field in fields.values():
             field.read_only = True
         return fields
-    
+
 
 class SignUpSerializer(serializers.Serializer):
     email = serializers.EmailField(
@@ -31,7 +31,7 @@ class SignUpSerializer(serializers.Serializer):
         validators=[RegexValidator(
             regex=constants.USERNAME_REGEX,
             message='Недопустимые символы в username!'
-        )]
+        )],
     )
 
     def validate_username(self, value):
@@ -85,7 +85,7 @@ class TokenSerializer(serializers.Serializer):
 
         if not default_token_generator.check_token(user, confirmation_code):
             raise serializers.ValidationError(
-                {'confirmation_code': 'Неверный код подтверждения!'}
+                {'confirmation_code': 'Неверный код подтверждения!'},
             )
 
         data['user'] = user
@@ -108,7 +108,7 @@ class UserSerializer(serializers.ModelSerializer):
 class UserMeSerializer(serializers.ModelSerializer):
     # Заменяем source на прямое использование поля
     role = serializers.CharField(read_only=True)
-    
+
     class Meta:
         model = User
         fields = (

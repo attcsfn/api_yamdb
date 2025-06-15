@@ -26,19 +26,19 @@ class Command(BaseCommand):
             '--directory',
             type=str,
             default=DATA_PATH,
-            help='Каталог с CSV файлами (по-умолчанию: {DATA_PATH})'
+            help='Каталог с CSV файлами (по-умолчанию: {DATA_PATH})',
         )
         parser.add_argument(
             '--delimiter',
             type=str,
             default=',',
-            help='CSV разделитель (по-умолчанию: ",")'
+            help='CSV разделитель (по-умолчанию: ",")',
         )
         parser.add_argument(
             '--encoding',
             type=str,
             default='utf-8',
-            help='Кодировка файла (по-умолчанию: utf-8)'
+            help='Кодировка файла (по-умолчанию: utf-8)',
         )
 
     def handle(self, *args, **options):
@@ -61,7 +61,7 @@ class Command(BaseCommand):
         """Проверка наличия каталога с файлами загрузки."""
         if not os.path.exists(self.directory):
             self.stderr.write(self.style.ERROR(
-                f"Каталог '{self.directory}' не найден"
+                f"Каталог '{self.directory}' не найден",
             ))
             return False
         return True
@@ -105,7 +105,7 @@ class Command(BaseCommand):
 
         except Exception as e:
             self.stderr.write(self.style.ERROR(
-                f"Ошибка обработки {file_path} для {model.__name__}: {str(e)}"
+                f"Ошибка обработки {file_path} для {model.__name__}: {str(e)}",
             ))
             self.error_count += 1
 
@@ -132,7 +132,7 @@ class Command(BaseCommand):
             if field_name in model_data and field.many_to_one:
                 model_data[field_name] = self._get_related_object(
                     field.related_model,
-                    model_data[field_name]
+                    model_data[field_name],
                 )
         return model_data
 
