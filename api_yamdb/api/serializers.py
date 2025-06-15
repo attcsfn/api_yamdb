@@ -78,7 +78,6 @@ class TokenSerializer(serializers.Serializer):
     confirmation_code = serializers.CharField(required=True)
 
     def validate(self, data):
-        # Исправлено: прямой доступ к обязательным полям вместо get()
         username = data['username']
         confirmation_code = data['confirmation_code']
         user = get_object_or_404(User, username=username)
@@ -93,7 +92,6 @@ class TokenSerializer(serializers.Serializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    # Убрано явное объявление поля role - используется значение из модели
     class Meta:
         model = User
         fields = (
@@ -106,7 +104,6 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserMeSerializer(serializers.ModelSerializer):
-    # Заменяем source на прямое использование поля
     role = serializers.CharField(read_only=True)
 
     class Meta:

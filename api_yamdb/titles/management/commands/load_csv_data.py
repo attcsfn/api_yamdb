@@ -8,7 +8,7 @@ from django.db import transaction
 
 DATA_PATH = f'{settings.BASE_DIR}/static/data'
 
-# Словарь "имя модели": "имя файла", если имя файла отличается от имени модели
+
 MODEL_FILES = {
     'User': 'users.csv',
     'Title': 'titles.csv',
