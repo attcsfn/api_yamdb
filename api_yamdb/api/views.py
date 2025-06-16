@@ -91,6 +91,12 @@ class UserViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_serializer_class(self):
+        """
+        Автоматически выбираем сериализатор для разных действий.
+        Для эндпоинта /me/ используем UserMeSerializer, 
+        для остальных случаев - стандартный UserSerializer.
+        """
+
         if self.action == 'me':
             return UserMeSerializer
         return super().get_serializer_class()
@@ -107,17 +113,22 @@ class UserViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated]
     )
     def me(self, request):
+        """Обработка эндпоинта /users/me/"""
         user = request.user
-        if request.method == 'PATCH':
-            serializer = self.get_serializer(
-                user,
-                data=request.data,
-                partial=True
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
+        
+        # Обработка GET-запроса
+        if request.method == 'GET':
+            serializer = self.get_serializer(user)
             return Response(serializer.data, status=HTTPStatus.OK)
-        serializer = self.get_serializer(user)
+        
+        # Обработка PATCH-запроса
+        serializer = self.get_serializer(
+            user,
+            data=request.data,
+            partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response(serializer.data, status=HTTPStatus.OK)
 
 
