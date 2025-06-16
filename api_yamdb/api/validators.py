@@ -8,7 +8,7 @@ from api_yamdb.constants import MAX_SCORE, MIN_SCORE
 def validate_year(value):
     if value > dt.date.today().year:
         raise ValidationError(
-            'Год произведения не может быть больше текущего.'
+            'Год произведения не может быть больше текущего.',
         )
 
 
@@ -17,6 +17,6 @@ def validate_score_range(value):
     if not is_valid:
         raise ValidationError(
             'Оценка должна быть в диапазоне от'
-            f'{MIN_SCORE} до {MAX_SCORE}'
+            f'{MIN_SCORE} до {MAX_SCORE}',
         )
     return value

@@ -33,23 +33,22 @@ class Title(models.Model):
     name = models.CharField(
         max_length=constants.LIMIT_MODEL_NAME,
         verbose_name='Название',
-        db_index=True
+        db_index=True,
     )
     year = models.SmallIntegerField(
         verbose_name='Год выпуска',
         db_index=True,
-        validators=[validate_year]
+        validators=[validate_year],
     )
     description = models.TextField(
         verbose_name='Описание',
-        blank=True
+        blank=True,
     )
     genre = models.ManyToManyField(
         Genre,
         through='GenreTitle',
         related_name='titles',
-        verbose_name='Жанр'
-
+        verbose_name='Жанр',
     )
     category = models.ForeignKey(
         Category,
@@ -57,7 +56,7 @@ class Title(models.Model):
         related_name='titles',
         verbose_name='Категория',
         null=True,
-        blank=True
+        blank=True,
     )
 
     class Meta:
@@ -73,10 +72,10 @@ class GenreTitle(models.Model):
     genre = models.ForeignKey(
         Genre,
         on_delete=models.CASCADE,
-        verbose_name='Жанр'
+        verbose_name='Жанр',
     )
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
-        verbose_name='Произведение'
+        verbose_name='Произведение',
     )

@@ -1,6 +1,7 @@
 from http import HTTPStatus
 
 from django.shortcuts import get_object_or_404
+from django.db.models import Avg
 from rest_framework import mixins, pagination, views, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
@@ -14,12 +15,11 @@ from titles.models import Category, Genre, Title
 from users.models import User
 from users.permissions import (IsAdmin, IsAdminOrReadOnly,
                                IsAuthorModeratorAdminOrReadOnly)
-
 from .filters import TitleFilter
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, ReviewSerializer, SignUpSerializer,
                           TitleGETSerializer, TitleSerializer, TokenSerializer,
-                          UserSerializer)
+                          UserSerializer, UserMeSerializer)
 
 
 class CreateListDestroyViewSet(mixins.CreateModelMixin,
@@ -51,6 +51,10 @@ class TitleViewSet(viewsets.ModelViewSet):
     filterset_fields = ('name',)
     ordering = ('name',)
     http_method_names = ('get', 'post', 'patch', 'delete')
+
+    def get_queryset(self):
+        return Title.objects.annotate(rating=Avg('reviews__score')).order_by(
+            'name')
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -100,15 +104,15 @@ class UserViewSet(viewsets.ModelViewSet):
     def me(self, request):
         user = request.user
         if request.method == 'PATCH':
-            serializer = self.get_serializer(
+            serializer = UserMeSerializer(
                 user,
                 data=request.data,
                 partial=True
             )
             serializer.is_valid(raise_exception=True)
-            serializer.save(role=user.role)
+            serializer.save()
             return Response(serializer.data, status=HTTPStatus.OK)
-        serializer = self.get_serializer(user)
+        serializer = UserMeSerializer(user)
         return Response(serializer.data, status=HTTPStatus.OK)
 
 
