@@ -138,7 +138,7 @@ class TitleGETSerializer(ReadOnlyModelSerializer):
 
     genre = GenreSerializer(many=True)
     category = CategorySerializer()
-    rating = serializers.IntegerField(read_only=True)
+    rating = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Title
@@ -151,6 +151,10 @@ class TitleGETSerializer(ReadOnlyModelSerializer):
             'category',
             'rating',
         )
+
+    def get_rating(self, obj):
+        if hasattr(obj, 'rating'):
+            return int(obj.rating) if obj.rating is not None else None
 
 
 class TitleSerializer(serializers.ModelSerializer):
