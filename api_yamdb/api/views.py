@@ -53,7 +53,6 @@ class TitleViewSet(viewsets.ModelViewSet):
         OrderingFilter,
     )
     filterset_class = TitleFilter
-    filterset_fields = ('name', 'category', 'genre', 'year')
     ordering_fields = ('name', 'year', 'rating')
     ordering = ('name',)  # сортировка по-умолчанию
 
