@@ -90,6 +90,11 @@ class UserViewSet(viewsets.ModelViewSet):
     lookup_field = 'username'
     http_method_names = ['get', 'post', 'patch', 'delete']
 
+    def get_serializer_class(self):
+        if self.action == 'me':
+            return UserMeSerializer
+        return super().get_serializer_class()
+
     def get_queryset(self):
         search = self.request.query_params.get('search')
         if search:
@@ -104,7 +109,7 @@ class UserViewSet(viewsets.ModelViewSet):
     def me(self, request):
         user = request.user
         if request.method == 'PATCH':
-            serializer = UserMeSerializer(
+            serializer = self.get_serializer(
                 user,
                 data=request.data,
                 partial=True
@@ -112,7 +117,7 @@ class UserViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=HTTPStatus.OK)
-        serializer = UserMeSerializer(user)
+        serializer = self.get_serializer(user)
         return Response(serializer.data, status=HTTPStatus.OK)
 
 

@@ -104,8 +104,6 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserMeSerializer(serializers.ModelSerializer):
-    role = serializers.CharField(read_only=True)
-
     class Meta:
         model = User
         fields = (
@@ -114,6 +112,7 @@ class UserMeSerializer(serializers.ModelSerializer):
         )
         extra_kwargs = {
             'email': {'required': True},
+            'role': {'read_only': True},
         }
 
 
