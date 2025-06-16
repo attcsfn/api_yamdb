@@ -12,14 +12,6 @@ from titles.models import Category, Genre, Title
 from users.models import User
 
 
-class ReadOnlyModelSerializer(serializers.ModelSerializer):
-    def get_fields(self):
-        fields = super().get_fields()
-        for field in fields.values():
-            field.read_only = True
-        return fields
-
-
 class SignUpSerializer(serializers.Serializer):
     email = serializers.EmailField(
         required=True,
@@ -133,7 +125,7 @@ class GenreSerializer(serializers.ModelSerializer):
         exclude = ('id',)
 
 
-class TitleGETSerializer(ReadOnlyModelSerializer):
+class TitleGETSerializer(serializers.ModelSerializer):
     """Сериализатор объектов модели Title для GET запросов."""
 
     genre = GenreSerializer(many=True)
@@ -151,6 +143,9 @@ class TitleGETSerializer(ReadOnlyModelSerializer):
             'category',
             'rating',
         )
+        extra_kwargs = {
+            field: {'read_only': True} for field in model._meta.fields
+        }
 
     def get_rating(self, obj):
         if hasattr(obj, 'rating'):
