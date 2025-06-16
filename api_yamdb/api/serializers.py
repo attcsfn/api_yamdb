@@ -1,4 +1,3 @@
-
 from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
@@ -7,7 +6,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
 from api_yamdb import constants
-from api.validators import validate_score_range, validate_year
+from api.validators import validate_year
 from reviews.models import Comment, Review
 from titles.models import Category, Genre, Title
 from users.models import User
@@ -32,7 +31,7 @@ class SignUpSerializer(serializers.Serializer):
         validators=[RegexValidator(
             regex=constants.USERNAME_REGEX,
             message='Недопустимые символы в username!'
-        )]
+        )],
     )
 
     def validate_username(self, value):
@@ -79,13 +78,13 @@ class TokenSerializer(serializers.Serializer):
     confirmation_code = serializers.CharField(required=True)
 
     def validate(self, data):
-        username = data.get('username')
-        confirmation_code = data.get('confirmation_code')
+        username = data['username']
+        confirmation_code = data['confirmation_code']
         user = get_object_or_404(User, username=username)
 
         if not default_token_generator.check_token(user, confirmation_code):
             raise serializers.ValidationError(
-                {'confirmation_code': 'Неверный код подтверждения!'}
+                {'confirmation_code': 'Неверный код подтверждения!'},
             )
 
         data['user'] = user
@@ -93,12 +92,6 @@ class TokenSerializer(serializers.Serializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    role = serializers.ChoiceField(
-        choices=User.ROLE_CHOICES,
-        required=False,
-        default=User.USER
-    )
-
     class Meta:
         model = User
         fields = (
@@ -109,10 +102,19 @@ class UserSerializer(serializers.ModelSerializer):
             'email': {'required': True},
         }
 
-    def validate_role(self, value):
-        if value not in dict(User.ROLE_CHOICES):
-            raise serializers.ValidationError("Недопустимая роль")
-        return value
+
+class UserMeSerializer(serializers.ModelSerializer):
+    role = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = User
+        fields = (
+            'username', 'email', 'first_name',
+            'last_name', 'bio', 'role'
+        )
+        extra_kwargs = {
+            'email': {'required': True},
+        }
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -136,7 +138,7 @@ class TitleGETSerializer(ReadOnlyModelSerializer):
 
     genre = GenreSerializer(many=True)
     category = CategorySerializer()
-    rating = serializers.IntegerField(read_only=True)
+    rating = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Title
@@ -149,6 +151,10 @@ class TitleGETSerializer(ReadOnlyModelSerializer):
             'category',
             'rating',
         )
+
+    def get_rating(self, obj):
+        if hasattr(obj, 'rating'):
+            return int(obj.rating) if obj.rating is not None else None
 
 
 class TitleSerializer(serializers.ModelSerializer):
@@ -198,7 +204,14 @@ class ReviewSerializer(serializers.ModelSerializer):
         slug_field='username',
         read_only=True,
     )
-    score = serializers.IntegerField(validators=[validate_score_range])
+    score = serializers.IntegerField(
+        min_value=1,
+        max_value=10,
+        error_messages={
+            'min_value': 'Оценка не может быть ниже 1.',
+            'max_value': 'Оценка не может быть выше 10.'
+        }
+    )
 
     class Meta:
         model = Review

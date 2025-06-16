@@ -22,7 +22,7 @@ class UserAdmin(BaseUserAdmin):
                 'is_staff',
                 'is_superuser',
                 'groups',
-                'user_permissions'
+                'user_permissions',
             ),
         }),
         (_('Important Dates'), {'fields': ('last_login', 'date_joined')}),
@@ -38,7 +38,7 @@ class UserAdmin(BaseUserAdmin):
                 'role',
                 'is_active',
                 'is_staff',
-                'is_superuser'
+                'is_superuser',
             ),
         }),
     )
