@@ -52,12 +52,11 @@ class TitleViewSet(viewsets.ModelViewSet):
     filter_backends = (
         DjangoFilterBackend,
         filters.OrderingFilter,
-        filters.SearchFilter,
     )
     filterset_class = TitleFilter
     filterset_fields = ('name', 'category', 'genre', 'year')
     ordering_fields = ('name', 'year', 'rating')
-    ordering = ('name',)
+    ordering = ('name',)  # сортировка по-умолчанию
 
     http_method_names = ('get', 'post', 'patch', 'delete')
 
