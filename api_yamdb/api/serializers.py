@@ -31,7 +31,7 @@ class SignUpSerializer(serializers.Serializer):
         validators=[RegexValidator(
             regex=constants.USERNAME_REGEX,
             message='Недопустимые символы в username!'
-        )]
+        )],
     )
 
     def validate_username(self, value):
@@ -78,14 +78,13 @@ class TokenSerializer(serializers.Serializer):
     confirmation_code = serializers.CharField(required=True)
 
     def validate(self, data):
-        # Исправлено: прямой доступ к обязательным полям вместо get()
         username = data['username']
         confirmation_code = data['confirmation_code']
         user = get_object_or_404(User, username=username)
 
         if not default_token_generator.check_token(user, confirmation_code):
             raise serializers.ValidationError(
-                {'confirmation_code': 'Неверный код подтверждения!'}
+                {'confirmation_code': 'Неверный код подтверждения!'},
             )
 
         data['user'] = user
@@ -93,7 +92,6 @@ class TokenSerializer(serializers.Serializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    # Убрано явное объявление поля role - используется значение из модели
     class Meta:
         model = User
         fields = (
@@ -106,9 +104,8 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserMeSerializer(serializers.ModelSerializer):
-    # Заменяем source на прямое использование поля
     role = serializers.CharField(read_only=True)
-    
+
     class Meta:
         model = User
         fields = (

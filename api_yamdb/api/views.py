@@ -1,9 +1,8 @@
 from http import HTTPStatus
 
-from django.db.models import Avg
 from django.shortcuts import get_object_or_404
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, mixins, pagination, views, viewsets
+from django.db.models import Avg
+from rest_framework import mixins, pagination, views, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 from rest_framework.permissions import (AllowAny, IsAuthenticated,
@@ -16,7 +15,6 @@ from titles.models import Category, Genre, Title
 from users.models import User
 from users.permissions import (IsAdmin, IsAdminOrReadOnly,
                                IsAuthorModeratorAdminOrReadOnly)
-
 from .filters import TitleFilter
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, ReviewSerializer, SignUpSerializer,
@@ -49,16 +47,9 @@ class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all().order_by('name')
     permission_classes = (IsAdminOrReadOnly,)
     pagination_class = pagination.LimitOffsetPagination
-    filter_backends = (
-        DjangoFilterBackend,
-        filters.OrderingFilter,
-        filters.SearchFilter,
-    )
     filterset_class = TitleFilter
-    filterset_fields = ('name', 'category', 'genre', 'year')
-    ordering_fields = ('name', 'year', 'rating')
+    filterset_fields = ('name',)
     ordering = ('name',)
-
     http_method_names = ('get', 'post', 'patch', 'delete')
 
     def get_queryset(self):
@@ -113,17 +104,14 @@ class UserViewSet(viewsets.ModelViewSet):
     def me(self, request):
         user = request.user
         if request.method == 'PATCH':
-            # Использование специального сериализатора без поля role
             serializer = UserMeSerializer(
                 user,
                 data=request.data,
                 partial=True
             )
             serializer.is_valid(raise_exception=True)
-            # Убрано принудительное сохранение роли
             serializer.save()
             return Response(serializer.data, status=HTTPStatus.OK)
-        # Для GET также используем сериализатор без role
         serializer = UserMeSerializer(user)
         return Response(serializer.data, status=HTTPStatus.OK)
 
