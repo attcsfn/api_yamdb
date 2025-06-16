@@ -3,9 +3,9 @@ from http import HTTPStatus
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, mixins, pagination, views, viewsets
+from rest_framework import mixins, pagination, views, viewsets
 from rest_framework.decorators import action
-from rest_framework.filters import SearchFilter
+from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import (AllowAny, IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
@@ -50,7 +50,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     pagination_class = pagination.LimitOffsetPagination
     filter_backends = (
         DjangoFilterBackend,
-        filters.OrderingFilter,
+        OrderingFilter,
     )
     filterset_class = TitleFilter
     filterset_fields = ('name', 'category', 'genre', 'year')
