@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
 from api_yamdb import constants
-from api.validators import validate_score_range, validate_year
+from api.validators import validate_year
 from reviews.models import Comment, Review
 from titles.models import Category, Genre, Title
 from users.models import User
@@ -138,7 +138,7 @@ class TitleGETSerializer(ReadOnlyModelSerializer):
 
     genre = GenreSerializer(many=True)
     category = CategorySerializer()
-    rating = serializers.IntegerField(read_only=True)
+    rating = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Title
@@ -151,6 +151,10 @@ class TitleGETSerializer(ReadOnlyModelSerializer):
             'category',
             'rating',
         )
+
+    def get_rating(self, obj):
+        if hasattr(obj, 'rating'):
+            return int(obj.rating) if obj.rating is not None else None
 
 
 class TitleSerializer(serializers.ModelSerializer):
@@ -200,7 +204,14 @@ class ReviewSerializer(serializers.ModelSerializer):
         slug_field='username',
         read_only=True,
     )
-    score = serializers.IntegerField(validators=[validate_score_range])
+    score = serializers.IntegerField(
+        min_value=1,
+        max_value=10,
+        error_messages={
+            'min_value': 'Оценка не может быть ниже 1.',
+            'max_value': 'Оценка не может быть выше 10.'
+        }
+    )
 
     class Meta:
         model = Review
