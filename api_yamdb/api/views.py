@@ -93,7 +93,7 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         """
         Автоматически выбираем сериализатор для разных действий.
-        Для эндпоинта /me/ используем UserMeSerializer, 
+        Для эндпоинта /me/ используем UserMeSerializer,
         для остальных случаев - стандартный UserSerializer.
         """
 
@@ -115,12 +115,12 @@ class UserViewSet(viewsets.ModelViewSet):
     def me(self, request):
         """Обработка эндпоинта /users/me/"""
         user = request.user
-        
+
         # Обработка GET-запроса
         if request.method == 'GET':
             serializer = self.get_serializer(user)
             return Response(serializer.data, status=HTTPStatus.OK)
-        
+
         # Обработка PATCH-запроса
         serializer = self.get_serializer(
             user,
