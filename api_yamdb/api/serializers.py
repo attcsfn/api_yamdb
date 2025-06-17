@@ -95,16 +95,10 @@ class UserSerializer(serializers.ModelSerializer):
         }
 
 
-class UserMeSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = User
-        fields = (
-            'username', 'email', 'first_name',
-            'last_name', 'bio', 'role'
-        )
+class UserMeSerializer(UserSerializer):
+    class Meta(UserSerializer.Meta):
         extra_kwargs = {
-            'email': {'required': True},
+            **UserSerializer.Meta.extra_kwargs,
             'role': {'read_only': True},
         }
 
