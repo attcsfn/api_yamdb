@@ -166,6 +166,7 @@ class TitleSerializer(serializers.ModelSerializer):
         many=True,
         required=True,
         allow_empty=False,
+        allow_null=False,
     )
     category = serializers.SlugRelatedField(
         slug_field='slug',
