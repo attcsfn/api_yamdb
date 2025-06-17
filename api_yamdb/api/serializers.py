@@ -136,8 +136,7 @@ class TitleGETSerializer(serializers.ModelSerializer):
         model = Title
         fields = ('id', 'name', 'year', 'description', 'genre', 'category',
                   'rating')
-        read_only_fields = ('id', 'name', 'year', 'description', 'genre',
-                            'category', 'rating')
+        read_only_fields = fields
 
     def get_rating(self, obj):
         if hasattr(obj, 'rating'):
