@@ -1,10 +1,11 @@
 from http import HTTPStatus
 
-from django.shortcuts import get_object_or_404
 from django.db.models import Avg
+from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, pagination, views, viewsets
 from rest_framework.decorators import action
-from rest_framework.filters import SearchFilter
+from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import (AllowAny, IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
@@ -47,9 +48,14 @@ class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all().order_by('name')
     permission_classes = (IsAdminOrReadOnly,)
     pagination_class = pagination.LimitOffsetPagination
+    filter_backends = (
+        DjangoFilterBackend,
+        OrderingFilter,
+    )
     filterset_class = TitleFilter
-    filterset_fields = ('name',)
-    ordering = ('name',)
+    ordering_fields = ('name', 'year', 'rating')
+    ordering = ('name',)  # сортировка по-умолчанию
+
     http_method_names = ('get', 'post', 'patch', 'delete')
 
     def get_queryset(self):
