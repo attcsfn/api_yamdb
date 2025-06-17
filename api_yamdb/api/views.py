@@ -109,16 +109,17 @@ class UserViewSet(viewsets.ModelViewSet):
     )
     def me(self, request):
         user = request.user
-        if request.method == 'PATCH':
-            serializer = UserMeSerializer(
-                user,
-                data=request.data,
-                partial=True
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
+        if request.method != 'PATCH':
+            serializer = UserMeSerializer(user)
             return Response(serializer.data, status=HTTPStatus.OK)
-        serializer = UserMeSerializer(user)
+
+        serializer = UserMeSerializer(
+            user,
+            data=request.data,
+            partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response(serializer.data, status=HTTPStatus.OK)
 
 
