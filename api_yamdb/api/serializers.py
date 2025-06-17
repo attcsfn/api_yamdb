@@ -134,18 +134,10 @@ class TitleGETSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Title
-        fields = (
-            'id',
-            'name',
-            'year',
-            'description',
-            'genre',
-            'category',
-            'rating',
-        )
-        extra_kwargs = {
-            field: {'read_only': True} for field in model._meta.fields
-        }
+        fields = ('id', 'name', 'year', 'description', 'genre', 'category',
+                  'rating')
+        read_only_fields = ('id', 'name', 'year', 'description', 'genre',
+                            'category', 'rating')
 
     def get_rating(self, obj):
         if hasattr(obj, 'rating'):
