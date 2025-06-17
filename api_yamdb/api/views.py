@@ -55,8 +55,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     filterset_class = TitleFilter
     ordering_fields = ('name', 'year', 'rating')
     ordering = ('name',)  # сортировка по-умолчанию
-
-    http_method_names = ('get', 'post', 'patch', 'delete')
+    http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_queryset(self):
         return Title.objects.annotate(rating=Avg('reviews__score')).order_by(
@@ -91,7 +90,6 @@ class TokenObtainView(views.APIView):
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
-    serializer_class = UserSerializer
     permission_classes = [IsAdmin]
     lookup_field = 'username'
     http_method_names = ['get', 'post', 'patch', 'delete']
@@ -102,22 +100,23 @@ class UserViewSet(viewsets.ModelViewSet):
             return self.queryset.filter(username__icontains=search)
         return self.queryset
 
+    def get_serializer_class(self):
+        if self.action == 'me':
+            return UserMeSerializer
+        return UserSerializer
+
     @action(
         detail=False,
         methods=['get', 'patch'],
-        permission_classes=[IsAuthenticated]
+        permission_classes=[IsAuthenticated],
     )
     def me(self, request):
         user = request.user
         if request.method != 'PATCH':
-            serializer = UserMeSerializer(user)
+            serializer = self.get_serializer(user)
             return Response(serializer.data, status=HTTPStatus.OK)
 
-        serializer = UserMeSerializer(
-            user,
-            data=request.data,
-            partial=True
-        )
+        serializer = self.get_serializer(user, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=HTTPStatus.OK)
