@@ -119,7 +119,7 @@ class GenreSerializer(serializers.ModelSerializer):
         exclude = ('id',)
 
 
-class TitleGETSerializer(ReadOnlyModelSerializer):
+class TitleGETSerializer(serializers.ModelSerializer):
     """Сериализатор объектов модели Title для GET запросов."""
 
     genre = GenreSerializer(many=True)
