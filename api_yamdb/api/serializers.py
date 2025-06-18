@@ -6,18 +6,10 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
 from api_yamdb import constants
-from api.validators import validate_score_range, validate_year
+from api.validators import validate_year
 from reviews.models import Comment, Review
 from titles.models import Category, Genre, Title
 from users.models import User
-
-
-class ReadOnlyModelSerializer(serializers.ModelSerializer):
-    def get_fields(self):
-        fields = super().get_fields()
-        for field in fields.values():
-            field.read_only = True
-        return fields
 
 
 class SignUpSerializer(serializers.Serializer):
@@ -103,17 +95,11 @@ class UserSerializer(serializers.ModelSerializer):
         }
 
 
-class UserMeSerializer(serializers.ModelSerializer):
-    role = serializers.CharField(read_only=True)
-
-    class Meta:
-        model = User
-        fields = (
-            'username', 'email', 'first_name',
-            'last_name', 'bio', 'role'
-        )
+class UserMeSerializer(UserSerializer):
+    class Meta(UserSerializer.Meta):
         extra_kwargs = {
-            'email': {'required': True},
+            **UserSerializer.Meta.extra_kwargs,
+            'role': {'read_only': True},
         }
 
 
@@ -138,21 +124,19 @@ class TitleGETSerializer(ReadOnlyModelSerializer):
 
     genre = GenreSerializer(many=True)
     category = CategorySerializer()
-    rating = serializers.IntegerField(read_only=True)
+    rating = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Title
-        fields = (
-            'id',
-            'name',
-            'year',
-            'description',
-            'genre',
-            'category',
-            'rating',
-        )
+        fields = ('id', 'name', 'year', 'description', 'genre', 'category',
+                  'rating')
+        read_only_fields = fields
 
+    def get_rating(self, obj):
+        if hasattr(obj, 'rating'):
+            return int(obj.rating) if obj.rating is not None else None
 
+          
 class TitleSerializer(serializers.ModelSerializer):
     """Сериализатор объектов модели Title."""
 
@@ -162,6 +146,7 @@ class TitleSerializer(serializers.ModelSerializer):
         many=True,
         required=True,
         allow_empty=False,
+        allow_null=False,
     )
     category = serializers.SlugRelatedField(
         slug_field='slug',
@@ -200,7 +185,14 @@ class ReviewSerializer(serializers.ModelSerializer):
         slug_field='username',
         read_only=True,
     )
-    score = serializers.IntegerField(validators=[validate_score_range])
+    score = serializers.IntegerField(
+        min_value=1,
+        max_value=10,
+        error_messages={
+            'min_value': 'Оценка не может быть ниже 1.',
+            'max_value': 'Оценка не может быть выше 10.'
+        }
+    )
 
     class Meta:
         model = Review

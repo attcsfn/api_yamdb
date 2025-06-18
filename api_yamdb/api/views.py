@@ -1,10 +1,11 @@
 from http import HTTPStatus
 
-from django.shortcuts import get_object_or_404
 from django.db.models import Avg
+from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, pagination, views, viewsets
 from rest_framework.decorators import action
-from rest_framework.filters import SearchFilter
+from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import (AllowAny, IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
@@ -47,10 +48,18 @@ class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all().order_by('name')
     permission_classes = (IsAdminOrReadOnly,)
     pagination_class = pagination.LimitOffsetPagination
+    filter_backends = (
+        DjangoFilterBackend,
+        OrderingFilter,
+    )
     filterset_class = TitleFilter
-    filterset_fields = ('name',)
-    ordering = ('name',)
-    http_method_names = ('get', 'post', 'patch', 'delete')
+    ordering_fields = ('name', 'year', 'rating')
+    ordering = ('name',)  # сортировка по-умолчанию
+    http_method_names = ['get', 'post', 'patch', 'delete']
+
+    def get_queryset(self):
+        return Title.objects.annotate(rating=Avg('reviews__score')).order_by(
+            'name')
 
     def get_queryset(self):
         return Title.objects.annotate(rating=Avg('reviews__score')).order_by(
@@ -85,7 +94,6 @@ class TokenObtainView(views.APIView):
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
-    serializer_class = UserSerializer
     permission_classes = [IsAdmin]
     lookup_field = 'username'
     http_method_names = ['get', 'post', 'patch', 'delete']
@@ -96,23 +104,25 @@ class UserViewSet(viewsets.ModelViewSet):
             return self.queryset.filter(username__icontains=search)
         return self.queryset
 
+    def get_serializer_class(self):
+        if self.action == 'me':
+            return UserMeSerializer
+        return UserSerializer
+
     @action(
         detail=False,
         methods=['get', 'patch'],
-        permission_classes=[IsAuthenticated]
+        permission_classes=[IsAuthenticated],
     )
     def me(self, request):
         user = request.user
-        if request.method == 'PATCH':
-            serializer = UserMeSerializer(
-                user,
-                data=request.data,
-                partial=True
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
+        if request.method != 'PATCH':
+            serializer = self.get_serializer(user)
             return Response(serializer.data, status=HTTPStatus.OK)
-        serializer = UserMeSerializer(user)
+
+        serializer = self.get_serializer(user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response(serializer.data, status=HTTPStatus.OK)
 
 
