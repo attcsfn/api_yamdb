@@ -97,8 +97,8 @@ class UserSerializer(serializers.ModelSerializer):
 
 class UserMeSerializer(UserSerializer):
     def get_extra_kwargs(self):
-        extra_kwargs = super().get_extra_kwargs()  # получаем kwargs родителя
-        extra_kwargs["role"] = {"read_only": True}  # дополняем
+        extra_kwargs = super().get_extra_kwargs()
+        extra_kwargs["role"] = {"read_only": True}
         return extra_kwargs
 
 
