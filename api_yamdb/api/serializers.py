@@ -186,8 +186,8 @@ class ReviewSerializer(serializers.ModelSerializer):
         read_only=True,
     )
     score = serializers.IntegerField(
-        min_value=1,
-        max_value=10,
+        min_value=constants.MIN_SCORE,
+        max_value=constants.MAX_SCORE,
         error_messages={
             'min_value': 'Оценка не может быть ниже 1.',
             'max_value': 'Оценка не может быть выше 10.'
