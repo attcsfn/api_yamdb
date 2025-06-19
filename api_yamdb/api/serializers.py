@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.core.validators import RegexValidator
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
@@ -13,6 +14,8 @@ from users.models import User
 
 
 class SignUpSerializer(serializers.Serializer):
+    """Сериализатор для регистрации пользователей."""
+
     email = serializers.EmailField(
         required=True,
         max_length=constants.LIMIT_EMAIL
@@ -20,10 +23,12 @@ class SignUpSerializer(serializers.Serializer):
     username = serializers.CharField(
         required=True,
         max_length=constants.LIMIT_USERNAME,
-        validators=[RegexValidator(
-            regex=constants.USERNAME_REGEX,
-            message='Недопустимые символы в username!'
-        )],
+        validators=[
+            RegexValidator(
+                regex=constants.USERNAME_REGEX,
+                message='Недопустимые символы в username!'
+            )
+        ],
     )
 
     def validate_username(self, value):
@@ -36,17 +41,22 @@ class SignUpSerializer(serializers.Serializer):
     def validate(self, data):
         email = data['email']
         username = data['username']
-        email_owner = User.objects.filter(email=email).first()
-        username_owner = User.objects.filter(username=username).first()
 
-        if email_owner and email_owner.username != username:
-            raise serializers.ValidationError({
-                'email': 'Этот email уже используется для другого аккаунта!'
-            })
-        if username_owner and username_owner.email != email:
-            raise serializers.ValidationError({
-                'username': 'Этот username уже занят другим пользователем!'
-            })
+        existing_user = User.objects.filter(
+            Q(email=email) | Q(username=username)
+        ).first()
+
+        if existing_user:
+            if (existing_user.email == email
+               and existing_user.username != username):
+                raise serializers.ValidationError({
+                    'email': 'Этот email уже используется для другого аккаунта!'
+                })
+            if (existing_user.username == username
+               and existing_user.email != email):
+                raise serializers.ValidationError({
+                    'username': 'Этот username уже занят другим пользователем!'
+                })
         return data
 
     def create(self, validated_data):
@@ -64,8 +74,11 @@ class SignUpSerializer(serializers.Serializer):
 
 
 class TokenSerializer(serializers.Serializer):
+    """Сериализатор для получения JWT-токена."""
+
     username = serializers.CharField(
-        required=True, max_length=constants.LIMIT_USERNAME
+        required=True,
+        max_length=constants.LIMIT_USERNAME
     )
     confirmation_code = serializers.CharField(required=True)
 
@@ -84,6 +97,8 @@ class TokenSerializer(serializers.Serializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    """Сериализатор для модели пользователя."""
+
     class Meta:
         model = User
         fields = (
@@ -96,6 +111,8 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserMeSerializer(UserSerializer):
+    """Сериализатор для профиля текущего пользователя."""
+
     class Meta(UserSerializer.Meta):
         extra_kwargs = {
             **UserSerializer.Meta.extra_kwargs,
@@ -104,7 +121,7 @@ class UserMeSerializer(UserSerializer):
 
 
 class CategorySerializer(serializers.ModelSerializer):
-    """Сериализатор объектов модели Category."""
+    """Сериализатор для категорий."""
 
     class Meta:
         model = Category
@@ -112,7 +129,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class GenreSerializer(serializers.ModelSerializer):
-    """Сериализатор объектов модели Genre."""
+    """Сериализатор для жанров."""
 
     class Meta:
         model = Genre
@@ -120,7 +137,7 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class TitleGETSerializer(serializers.ModelSerializer):
-    """Сериализатор объектов модели Title для GET запросов."""
+    """Сериализатор для чтения произведений."""
 
     genre = GenreSerializer(many=True)
     category = CategorySerializer()
@@ -128,17 +145,20 @@ class TitleGETSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Title
-        fields = ('id', 'name', 'year', 'description', 'genre', 'category',
-                  'rating')
+        fields = (
+            'id', 'name', 'year', 'description',
+            'genre', 'category', 'rating'
+        )
         read_only_fields = fields
 
     def get_rating(self, obj):
         if hasattr(obj, 'rating'):
             return int(obj.rating) if obj.rating is not None else None
+        return None
 
 
 class TitleSerializer(serializers.ModelSerializer):
-    """Сериализатор объектов модели Title."""
+    """Сериализатор для создания/обновления произведений."""
 
     genre = serializers.SlugRelatedField(
         slug_field='slug',
@@ -146,7 +166,6 @@ class TitleSerializer(serializers.ModelSerializer):
         many=True,
         required=True,
         allow_empty=False,
-        allow_null=False,
     )
     category = serializers.SlugRelatedField(
         slug_field='slug',
@@ -157,18 +176,17 @@ class TitleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Title
         fields = (
-            'name',
-            'year',
-            'description',
-            'genre',
-            'category',
+            'name', 'year', 'description', 'genre', 'category'
         )
 
-    def to_representation(self, title):
-        return TitleGETSerializer(title).data
+    def to_representation(self, instance):
+        """Используем GET-сериализатор для представления данных."""
+        return TitleGETSerializer(instance).data
 
 
 class CommentSerializer(serializers.ModelSerializer):
+    """Сериализатор для комментариев."""
+
     author = serializers.SlugRelatedField(
         read_only=True,
         slug_field='username',
@@ -181,6 +199,8 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
+    """Сериализатор для отзывов."""
+
     author = serializers.SlugRelatedField(
         slug_field='username',
         read_only=True,
@@ -205,11 +225,11 @@ class ReviewSerializer(serializers.ModelSerializer):
         title_id = self.context['view'].kwargs.get('title_id')
         user = request.user
 
-        if request.method != 'POST':
-            return data
-
-        if Review.objects.filter(title_id=title_id, author=user).exists():
-            raise serializers.ValidationError(
-                'Вы уже оставили отзыв на это произведение.'
-            )
+        if request.method == 'POST':
+            if Review.objects.filter(
+                title_id=title_id, author=user
+            ).exists():
+                raise serializers.ValidationError(
+                    'Вы уже оставили отзыв на это произведение.'
+                )
         return data
