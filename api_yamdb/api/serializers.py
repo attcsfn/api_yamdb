@@ -97,10 +97,8 @@ class UserSerializer(serializers.ModelSerializer):
 
 class UserMeSerializer(UserSerializer):
     class Meta(UserSerializer.Meta):
-        extra_kwargs = {
-            **UserSerializer.Meta.extra_kwargs,
-            'role': {'read_only': True},
-        }
+        extra_kwargs = dict(UserSerializer.Meta.extra_kwargs)
+        extra_kwargs.update({'role': {'read_only': True}})
 
 
 class CategorySerializer(serializers.ModelSerializer):
