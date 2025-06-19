@@ -96,10 +96,9 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserMeSerializer(UserSerializer):
-    def get_extra_kwargs(self):
-        extra_kwargs = super().get_extra_kwargs()
-        extra_kwargs["role"] = {"read_only": True}
-        return extra_kwargs
+    class Meta(UserSerializer.Meta):
+        extra_kwargs = UserSerializer.Meta.extra_kwargs.copy()
+        extra_kwargs['role'] = {'read_only': True}
 
 
 class CategorySerializer(serializers.ModelSerializer):
