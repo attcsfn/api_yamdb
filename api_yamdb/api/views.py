@@ -45,7 +45,7 @@ class GenreViewSet(CreateListDestroyViewSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all().order_by('name')
+    queryset = Title.objects.all()
     permission_classes = (IsAdminOrReadOnly,)
     pagination_class = pagination.LimitOffsetPagination
     filter_backends = (
@@ -58,12 +58,9 @@ class TitleViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_queryset(self):
-        return Title.objects.annotate(rating=Avg('reviews__score')).order_by(
-            'name')
-
-    def get_queryset(self):
-        return Title.objects.annotate(rating=Avg('reviews__score')).order_by(
-            'name')
+        return super().get_queryset().annotate(
+            rating=Avg('reviews__score')
+        ).order_by('name')
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
