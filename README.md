@@ -38,9 +38,6 @@ cd api_yamdb
 
 ```
 python -m venv venv
-```
-
-```
 source venv/Scripts/activate
 ```
 
@@ -48,9 +45,6 @@ source venv/Scripts/activate
 
 ```
 python -m pip install --upgrade pip
-```
-
-```
 pip install -r requirements.txt
 ```
 
@@ -60,7 +54,6 @@ pip install -r requirements.txt
 Создать и выполнить миграции:
 ```
 python manage.py makemigrations
-```
 python manage.py migrate
 ```
 
